@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" x-data="islamicApp()" :class="{'dark': darkMode, 'night': nightMode}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنصة الإسلامية الشاملة - القرآن الكريم والأذكار والمواقيت</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        amiri: ['Amiri', 'serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        islamic: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+        }
+        .quran-font {
+            font-family: 'Amiri', serif;
+        }
+        .night {
+            background-color: #0b0f19 !important;
+            color: #e2e8f0 !important;
+        }
+        .night .glass-panel {
+            background-color: rgba(17, 24, 39, 0.85) !important;
+            border-color: rgba(55, 65, 81, 0.5) !important;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #059669;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #047857;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" @click="activeTab = 'quran'; currentSurah = null">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-quran text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">روضة القرآن</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">منصة إسلامية متكاملة</p>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center space-x-1 space-x-reverse bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl">
+                <button @click="activeTab = 'quran'; currentSurah = null" :class="activeTab === 'quran' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'" class="px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-book-quran"></i>
+                    <span>القرآن الكريم</span>
+                </button>
+                <button @click="activeTab = 'azkar'" :class="activeTab === 'azkar' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'" class="px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-hands-praying"></i>
+                    <span>الأذكار والأدعية</span>
+                </button>
+                <button @click="activeTab = 'tasbih'" :class="activeTab === 'tasbih' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'" class="px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-circle-dot"></i>
+                    <span>السبحة الإلكترونية</span>
+                </button>
+                <button @click="activeTab = 'prayer'" :class="activeTab === 'prayer' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'" class="px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-mosque"></i>
+                    <span>مواقيت الصلاة</span>
+                </button>
+                <button @click="activeTab = 'bookmarks'" :class="activeTab === 'bookmarks' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'" class="px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span>المحفوظات</span>
+                </button>
+            </nav>
+
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <button @click="toggleTheme()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors">
+                    <i :class="darkMode ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-slate-700'"></i>
+                </button>
+                <button @click="toggleNightMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors" title="الوضع الليلي المريح">
+                    <i :class="nightMode ? 'fa-solid fa-lightbulb text-amber-400' : 'fa-regular fa-lightbulb'"></i>
+                </button>
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="mobileMenuOpen" @click.away="mobileMenuOpen = false" class="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <button @click="activeTab = 'quran'; currentSurah = null; mobileMenuOpen = false" class="w-full text-right px-4 py-3 rounded-xl font-medium flex items-center space-x-3 space-x-reverse" :class="activeTab === 'quran' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'">
+                <i class="fa-solid fa-book-quran"></i>
+                <span>القرآن الكريم</span>
+            </button>
+            <button @click="activeTab = 'azkar'; mobileMenuOpen = false" class="w-full text-right px-4 py-3 rounded-xl font-medium flex items-center space-x-3 space-x-reverse" :class="activeTab === 'azkar' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'">
+                <i class="fa-solid fa-hands-praying"></i>
+                <span>الأذكار والأدعية</span>
+            </button>
+            <button @click="activeTab = 'tasbih'; mobileMenuOpen = false" class="w-full text-right px-4 py-3 rounded-xl font-medium flex items-center space-x-3 space-x-reverse" :class="activeTab === 'tasbih' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'">
+                <i class="fa-solid fa-circle-dot"></i>
+                <span>السبحة الإلكترونية</span>
+            </button>
+            <button @click="activeTab = 'prayer'; mobileMenuOpen = false" class="w-full text-right px-4 py-3 rounded-xl font-medium flex items-center space-x-3 space-x-reverse" :class="activeTab === 'prayer' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'">
+                <i class="fa-solid fa-mosque"></i>
+                <span>مواقيت الصلاة</span>
+            </button>
+            <button @click="activeTab = 'bookmarks'; mobileMenuOpen = false" class="w-full text-right px-4 py-3 rounded-xl font-medium flex items-center space-x-3 space-x-reverse" :class="activeTab === 'bookmarks' ? 'bg-emerald-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'">
+                <i class="fa-solid fa-bookmark"></i>
+                <span>المحفوظات</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div x-show="activeTab === 'quran'" class="space-y-6">
+            <div x-show="!currentSurah">
+                <div class="relative bg-gradient-to-r from-emerald-800 to-teal-700 rounded-3xl p-8 text-white shadow-2xl mb-8 overflow-hidden">
+                    <div class="absolute -left-10 -bottom-10 opacity-10 text-9xl">
+                        <i class="fa-solid fa-quran"></i>
+                    </div>
+                    <div class="relative z-10 max-w-2xl">
+                        <span class="bg-emerald-500/30 text-emerald-100 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-3 inline-block">كلام الله العظيم</span>
+                        <h2 class="text-3xl md:text-4xl font-bold font-amiri mb-3">اقرأ وارتل القرآن الكريم</h2>
+                        <p class="text-emerald-100 text-sm md:text-base mb-6">تصفح سور المصحف الشريف الـ 114 برواية حفص عن عاصم مع تلاوة صوتية متواصلة لأشهر القراء وميزة البحث السريع.</p>
+                        
+                        <div class="relative">
+                            <input type="text" x-model="searchQuery" placeholder="ابحث عن اسم السورة..." class="w-full pl-4 pr-12 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-emerald-200 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <i class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 text-emerald-200"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="surah in filteredSurahs" :key="surah.number">
+                        <div @click="loadSurah(surah.number)" class="glass-panel bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-xl hover:border-emerald-500/50 dark:hover:border-emerald-500/50 transition-all duration-300 cursor-pointer flex items-center justify-between group">
+                            <div class="flex items-center space-x-4 space-x-reverse">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                    <span x-text="surah.number"></span>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg group-hover:text-emerald-600 transition-colors" x-text="surah.englishName"></h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                                        <span x-text="surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'"></span> • 
+                                        <span x-text="surah.numberOfAyahs + ' آيات'"></span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-amiri text-2xl font-bold text-emerald-700 dark:text-emerald-400" x-text="surah.name"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="currentSurah" class="space-y-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <button @click="currentSurah = null; stopAudio()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-2xl font-bold font-amiri" x-text="surahData ? surahData.name : ''"></h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400" x-text="surahData ? (surahData.englishName + ' - ' + (surahData.revelationType === 'Meccan' ? 'مكية' : 'مدنية')) : ''"></p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center space-x-2 space-x-reverse bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-xl">
+                            <label class="text-xs font-medium">حجم الخط:</label>
+                            <input type="range" min="20" max="48" x-model="fontSize" class="accent-emerald-600 w-24">
+                        </div>
+
+                        <select x-model="selectedReciter" class="bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="ar.alafasy">مشاري العفاسي</option>
+                            <option value="ar.yasseraldossari">ياسر الدوسري</option>
+                            <option value="ar.abdulbasit">عبد الباسط عبد الصمد</option>
+                            <option value="ar.sudais">عبد الرحمن السديس</option>
+                            <option value="ar.minshawi">محمد صديق المنشاوي</option>
+                            <option value="ar.obada">محمد عبادة</option>
+                            <option value="ar.nasser">ناصر القطامي</option>
+                        </select>
+
+                        <button @click="playFullSurah()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 shadow-md shadow-emerald-500/20 flex items-center space-x-2 space-x-reverse">
+                            <i :class="isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+                            <span x-text="isPlaying ? 'إيقاف التلاوة' : 'تشغيل السورة كاملة'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-6 md:p-10 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-8">
+                    <div x-show="currentSurahNumber !== 9" class="text-center py-4 border-b border-slate-100 dark:border-slate-700">
+                        <p class="font-amiri text-3xl md:text-4xl text-emerald-700 dark:text-emerald-400">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+                    </div>
+
+                    <div class="leading-loose space-y-6 text-right">
+                        <template x-for="ayah in ayahs" :key="ayah.number">
+                            <div class="p-4 rounded-2xl transition-colors group relative border-b border-slate-100 dark:border-slate-700/50 pb-6" :class="currentPlayingAyah === ayah.numberInSurah ? 'bg-emerald-50/85 dark:bg-emerald-950/50 border-emerald-400 dark:border-emerald-600 shadow-sm' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'">
+                                <span class="quran-font inline" :style="'font-size: ' + fontSize + 'px;'" x-text="ayah.text"></span>
+                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-amiri text-sm mx-2 shadow-sm border border-emerald-200 dark:border-emerald-800" x-text="ayah.numberInSurah"></span>
+                                
+                                <div class="mt-3 flex items-center space-x-3 space-x-reverse opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button @click="playAyah(ayah.numberInSurah, true)" class="text-xs px-3 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200">
+                                        <i class="fa-solid fa-play ml-1"></i> <span x-text="selectedReciter === 'ar.obada' ? 'استماع للسورة كاملة' : 'استماع وتتمة تلقائية'"></span>
+                                    </button>
+                                    <button @click="toggleBookmark(ayah)" class="text-xs px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200">
+                                        <i class="fa-solid fa-bookmark ml-1" :class="isBookmarked(ayah) ? 'text-amber-500' : ''"></i> 
+                                        <span x-text="isBookmarked(ayah) ? 'محفوظ' : 'حفظ الآية'"></span>
+                                    </button>
+                                    <button @click="copyAyah(ayah)" class="text-xs px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200">
+                                        <i class="fa-solid fa-copy ml-1"></i> نسخ
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="activeTab === 'azkar'" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <h2 class="text-3xl font-bold mb-3 font-amiri">حصن المسلم والأذكار النبوية</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">مجموعة مختارة من أذكار الصباح والمساء والأدعية الصحيحة مع عداد تفاعلي.</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-2 mb-8">
+                <template x-for="cat in zikrCategories" :key="cat.id">
+                    <button @click="selectedZikrCat = cat.id" :class="selectedZikrCat === cat.id ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50'" class="px-5 py-2.5 rounded-2xl font-medium text-sm transition-all border border-slate-200 dark:border-slate-700">
+                        <span x-text="cat.name"></span>
+                    </button>
+                </template>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <template x-for="item in currentZikrList" :key="item.id">
+                    <div class="glass-panel bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400" x-text="item.title"></span>
+                                <span class="text-xs text-slate-400" x-text="'المطلوب: ' + item.count + ' مرات'"></span>
+                            </div>
+                            <p class="font-amiri text-xl leading-relaxed text-right mb-4" x-text="item.text"></p>
+                            <p class="text-xs text-slate-500 italic" x-text="item.description"></p>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <span class="text-sm font-bold text-emerald-600" x-text="'المتبقي: ' + item.remaining"></span>
+                            <button @click="decrementZikr(item)" :disabled="item.remaining === 0" class="px-6 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-md shadow-emerald-500/20">
+                                <i class="fa-solid fa-fingerprint ml-2"></i> تسبيح
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div x-show="activeTab === 'tasbih'" class="space-y-6 max-w-xl mx-auto text-center">
+            <div class="glass-panel bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl space-y-6">
+                <h2 class="text-3xl font-bold font-amiri">السبحة الإلكترونية التفاعلية</h2>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <template x-for="phrase in tasbihPhrases" :key="phrase">
+                        <button @click="currentTasbihPhrase = phrase; tasbihCount = 0" :class="currentTasbihPhrase === phrase ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'" class="p-3 rounded-xl text-sm font-medium transition-all">
+                            <span x-text="phrase"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <div class="py-10 flex flex-col items-center justify-center">
+                    <div @click="incrementTasbih" class="w-56 h-56 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex flex-col items-center justify-center shadow-2xl shadow-emerald-500/40 cursor-pointer transform active:scale-95 transition-all select-none">
+                        <span class="text-2xl font-amiri mb-1 opacity-90" x-text="currentTasbihPhrase"></span>
+                        <span class="text-6xl font-black" x-text="tasbihCount"></span>
+                        <span class="text-xs mt-2 opacity-80">اضغط للتسبيح</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center space-x-4 space-x-reverse">
+                    <button @click="tasbihCount = 0" class="px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 transition-colors font-medium">
+                        <i class="fa-solid fa-rotate-right ml-2"></i> تصفير العدد
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="activeTab === 'prayer'" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <h2 class="text-3xl font-bold mb-3 font-amiri">مواقيت الصلاة واتجاه القبلة</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">احصل على المواقيت حسب إحداثيات موقعك واختر طريقة الحساب والمذهب المناسبين لبلدك.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center items-stretch gap-3">
+                <button @click="requestPrayerLocation()" :disabled="prayerLoading" class="px-5 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-60">
+                    <i class="fa-solid fa-location-crosshairs ml-2"></i><span x-text="prayerLoading ? 'جارٍ تحديث المواقيت...' : 'تحديد موقعي وتحديث المواقيت'"></span>
+                </button>
+                <select x-model.number="prayerMethod" @change="refreshPrayerTimes()" aria-label="طريقة حساب مواقيت الصلاة" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-xl text-sm">
+                    <option value="5">هيئة المساحة المصرية</option>
+                    <option value="4">أم القرى - مكة</option>
+                    <option value="3">رابطة العالم الإسلامي</option>
+                    <option value="2">ISNA - أمريكا الشمالية</option>
+                    <option value="1">جامعة العلوم الإسلامية - كراتشي</option>
+                    <option value="8">طريقة الخليج</option>
+                    <option value="9">الكويت</option>
+                    <option value="10">قطر</option>
+                    <option value="11">سنغافورة</option>
+                    <option value="12">اتحاد المنظمات الإسلامية - فرنسا</option>
+                    <option value="13">الشؤون الدينية التركية</option>
+                    <option value="14">الإدارة الدينية لمسلمي روسيا</option>
+                    <option value="15">لجنة تحري الهلال</option>
+                    <option value="16">دبي</option>
+                    <option value="17">ماليزيا (JAKIM)</option>
+                    <option value="18">تونس</option>
+                    <option value="19">الجزائر</option>
+                    <option value="20">إندونيسيا</option>
+                    <option value="21">المغرب</option>
+                    <option value="22">البرتغال</option>
+                    <option value="23">الأردن</option>
+                </select>
+                <select x-model.number="prayerSchool" @change="refreshPrayerTimes()" aria-label="طريقة حساب العصر" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-xl text-sm">
+                    <option value="0">العصر: الجمهور</option>
+                    <option value="1">العصر: الحنفي</option>
+                </select>
+            </div>
+            <p x-show="prayerError" x-text="prayerError" role="status" class="text-center text-sm text-red-600"></p>
+            <p class="text-center text-xs text-slate-500 dark:text-slate-400">المواقيت محسوبة من موقعك والاختيارات أعلاه؛ قد تختلف دقائق عن تقويم الجهة الرسمية المحلية، فاتبع تقويم مسجدك عند الاختلاف.</p>
+
+            <div class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <span class="bg-emerald-500/30 text-emerald-100 px-3 py-1 rounded-full text-xs font-semibold mb-2 inline-block" x-text="cityName"></span>
+                    <h3 class="text-3xl font-bold mb-1" x-text="nextPrayerName ? 'الصلاة القادمة: ' + nextPrayerName : 'مواقيت الصلاة' "></h3>
+                    <p class="text-emerald-100 text-sm" x-text="nextPrayerName ? 'الوقت المتبقي: ' + countdownTime : countdownTime"></p>
+                </div>
+                <div class="text-center md:text-left">
+                    <div class="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-clock text-2xl mb-1"></i>
+                        <span class="text-xs font-bold" x-text="currentTime"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <template x-for="(time, name) in prayerTimes" :key="name">
+                    <div class="glass-panel bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center space-y-2">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-mosque"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-700 dark:text-slate-200" x-text="translatePrayer(name)"></h4>
+                        <p class="text-xl font-black text-emerald-600 dark:text-emerald-400" x-text="time"></p>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div x-show="activeTab === 'bookmarks'" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <h2 class="text-3xl font-bold mb-3 font-amiri">الآيات المحفوظة</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">جميع الآيات التي قمت بحفظها لسهولة العودة إليها والتأمل فيها.</p>
+            </div>
+
+            <template x-if="bookmarks.length === 0">
+                <div class="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                    <i class="fa-regular fa-bookmark text-5xl text-slate-300 dark:text-slate-600 mb-4"></i>
+                    <p class="text-slate-500 font-medium">لا توجد آيات محفوظة حتى الآن.</p>
+                </div>
+            </template>
+
+            <div class="space-y-4">
+                <template x-for="b in bookmarks" :key="b.number">
+                    <div class="glass-panel bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="space-y-2">
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600" x-text="'سورة ' + b.surahName + ' - آية ' + b.numberInSurah"></span>
+                            <p class="font-amiri text-2xl" x-text="b.text"></p>
+                        </div>
+                        <button @click="removeBookmark(b)" class="px-4 py-2 bg-red-50 dark:bg-red-950/50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors">
+                            <i class="fa-solid fa-trash ml-2"></i> إزالة
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </main>
+
+    <div x-show="currentAudioUrl" class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-4 px-6 z-40 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col gap-3">
+          <div class="w-full flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
+                    <i class="fa-solid fa-volume-high"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm" x-text="currentAudioTitle"></h4>
+                    <p class="text-xs text-slate-500">مشغل تلاوة القرآن الكريم</p>
+                    <p x-show="audioError" x-text="audioError" role="status" class="text-xs text-red-600 mt-1"></p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button @click="skipAudio(-10)" title="رجوع 10 ثوانٍ" aria-label="رجوع 10 ثوانٍ" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:text-emerald-600"><i class="fa-solid fa-backward-step"></i><span class="text-[10px] mr-1">10</span></button>
+                <button @click="toggleAudioPlay()" class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 transition-colors">
+                    <i :class="isPlaying ? 'fa-solid fa-pause text-lg' : 'fa-solid fa-play text-lg'"></i>
+                </button>
+                <button @click="skipAudio(10)" title="تقديم 10 ثوانٍ" aria-label="تقديم 10 ثوانٍ" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:text-emerald-600"><i class="fa-solid fa-forward-step"></i><span class="text-[10px] mr-1">10</span></button>
+                <button @click="stopAudio()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+          </div>
+          <div class="w-full flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <span class="min-w-[42px] text-center tabular-nums" x-text="formatAudioTime(audioCurrentTime)"></span>
+              <input type="range" min="0" step="0.1" :max="audioDuration || 0" :value="audioCurrentTime" :disabled="!audioDuration" @input="seekAudio($event.target.value)" aria-label="تقديم أو ترجيع التلاوة" class="w-full accent-emerald-600 disabled:opacity-40 cursor-pointer">
+              <span class="min-w-[42px] text-center tabular-nums" x-text="formatAudioTime(audioDuration)"></span>
+          </div>
+        </div>
+    </div>
+
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 dark:text-slate-400 text-sm">
+            <p>جميع حقوق النشر مخصصة لكل مسلم يسعى لخدمة كتاب الله وسنة نبيه.</p>
+        </div>
+    </footer>
+
+    <script>
+        function islamicApp() {
+            return {
+                activeTab: 'quran',
+                mobileMenuOpen: false,
+                darkMode: false,
+                nightMode: false,
+                searchQuery: '',
+                surahs: [],
+                currentSurah: null,
+                currentSurahNumber: null,
+                surahData: null,
+                ayahs: [],
+                fontSize: 28,
+                selectedReciter: 'ar.alafasy',
+                currentAudioUrl: null,
+                currentAudioTitle: '',
+                audioCurrentTime: 0,
+                audioDuration: 0,
+                isPlaying: false,
+                audioElement: null,
+                currentPlayingAyah: null,
+                autoNext: true,
+                audioFallbacks: [],
+                audioFallbackIndex: 0,
+                audioError: '',
+                obadaFilesPromise: null,
+                bookmarks: JSON.parse(localStorage.getItem('quran_bookmarks') || '[]'),
+                
+                selectedZikrCat: 'morning',
+                zikrCategories: [
+                    { id: 'morning', name: 'أذكار الصباح' },
+                    { id: 'evening', name: 'أذكار المساء' },
+                    { id: 'sleep', name: 'أذكار النوم' },
+                    { id: 'praise', name: 'تسابيح واستغفار' }
+                ],
+                azkarList: [
+                    { id: 1, category: 'morning', title: 'أذكار الصباح', text: 'اللهم بك أصبحنا، وبك أمسينا، وبك نحيا، وبك نموت وإليك النشور.', count: 1, remaining: 1, description: 'رواه الترمذي' },
+                    { id: 2, category: 'morning', title: 'آية الكرسي', text: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...', count: 1, remaining: 1, description: 'حفظ من الشيطان حتى تمسي' },
+                    { id: 3, category: 'evening', title: 'أذكار المساء', text: 'اللهم بك أمسينا، وبك أصبحنا، وبك نحيا، وبك نموت وإليك المصير.', count: 1, remaining: 1, description: 'رواه الترمذي' },
+                    { id: 4, category: 'sleep', title: 'قبل النوم', text: 'باسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ...', count: 1, remaining: 1, description: 'متفق عليه' },
+                    { id: 5, category: 'praise', title: 'التسبيح والتحميد', text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ.', count: 100, remaining: 100, description: 'خفيفتان على اللسان ثقيلتان في الميزان' }
+                ],
+
+                tasbihPhrases: ['سبحان الله', 'الحمد لله', 'الله أكبر', 'لا إله إلا الله', 'استغفر الله', 'صلى على النبي'],
+                currentTasbihPhrase: 'سبحان الله',
+                tasbihCount: 0,
+
+                currentTime: '',
+                prayerTimes: { Fajr: '--:--', Sunrise: '--:--', Dhuhr: '--:--', Asr: '--:--', Maghrib: '--:--', Isha: '--:--' },
+                prayerRawTimes: {},
+                prayerCoords: null,
+                prayerTimezone: '',
+                prayerDateLocal: '',
+                prayerLoading: false,
+                prayerError: '',
+                prayerMethod: 5,
+                prayerSchool: 0,
+                cityName: 'حدّد موقعك لعرض المواقيت',
+                nextPrayerName: '',
+                countdownTime: 'حدّد موقعك أولًا',
+
+                init() {
+                    this.fetchSurahs();
+                    this.loadObadaTracks().catch(err => console.warn('Obada track index preload failed:', err));
+                    this.audioElement = new Audio();
+
+                    this.audioElement.addEventListener('playing', () => {
+                        this.isPlaying = true;
+                        this.audioError = '';
+                    });
+
+                    this.audioElement.addEventListener('timeupdate', () => {
+                        this.audioCurrentTime = Number.isFinite(this.audioElement.currentTime) ? this.audioElement.currentTime : 0;
+                        if (Number.isFinite(this.audioElement.duration)) this.audioDuration = this.audioElement.duration;
+                    });
+                    this.audioElement.addEventListener('loadedmetadata', () => {
+                        this.audioDuration = Number.isFinite(this.audioElement.duration) ? this.audioElement.duration : 0;
+                    });
+                    this.audioElement.addEventListener('durationchange', () => {
+                        this.audioDuration = Number.isFinite(this.audioElement.duration) ? this.audioElement.duration : 0;
+                    });
+                    
+                    this.audioElement.addEventListener('ended', () => {
+                        if (this.autoNext && this.currentPlayingAyah && this.currentPlayingAyah < this.ayahs.length) {
+                            this.playAyah(this.currentPlayingAyah + 1, true);
+                        } else {
+                            this.isPlaying = false;
+                            this.currentPlayingAyah = null;
+                        }
+                    });
+
+                    this.audioElement.addEventListener('error', (e) => {
+                        console.error('Audio load error', e);
+                        if (this.audioFallbackIndex < this.audioFallbacks.length - 1) {
+                            this.audioFallbackIndex++;
+                            this.currentAudioUrl = this.audioFallbacks[this.audioFallbackIndex];
+                            this.audioElement.src = this.currentAudioUrl;
+                            this.audioElement.load();
+                            this.audioElement.play().then(() => {
+                                this.isPlaying = true;
+                            }).catch(err => console.warn('Audio mirror retry failed:', err));
+                            return;
+                        }
+                        this.isPlaying = false;
+                        this.currentPlayingAyah = null;
+                        this.audioError = 'تعذر تحميل التلاوة. تحقق من اتصال الإنترنت ثم أعد المحاولة.';
+                    });
+
+                    setInterval(() => {
+                        this.updatePrayerClock();
+                        this.updatePrayerCountdown();
+                    }, 1000);
+                },
+
+                async fetchSurahs() {
+                    try {
+                        const res = await fetch('https://api.alquran.cloud/v1/surah');
+                        const data = await res.json();
+                        if (data.code === 200) {
+                            this.surahs = data.data;
+                        }
+                    } catch (e) {
+                        console.error('Error fetching surahs');
+                    }
+                },
+
+                get filteredSurahs() {
+                    if (!this.searchQuery) return this.surahs;
+                    return this.surahs.filter(s => s.name.includes(this.searchQuery) || s.englishName.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                },
+
+                async loadSurah(number) {
+                    this.stopAudio();
+                    this.currentSurahNumber = number;
+                    this.currentSurah = number;
+                    try {
+                        const res = await fetch(`https://api.alquran.cloud/v1/surah/${number}`);
+                        const data = await res.json();
+                        if (data.code === 200) {
+                            this.surahData = data.data;
+                            this.ayahs = data.data.ayahs;
+                        }
+                    } catch (e) {
+                        console.error('Error loading surah details');
+                    }
+                },
+
+                async loadObadaTracks() {
+                    if (!this.obadaFilesPromise) {
+                        this.obadaFilesPromise = fetch('https://archive.org/metadata/z02402xxxxxxxxxxx')
+                            .then(res => {
+                                if (!res.ok) throw new Error('تعذر الوصول إلى فهرس التلاوات');
+                                return res.json();
+                            })
+                            .then(data => {
+                                const tracks = {};
+                                (data.files || []).forEach(file => {
+                                    if (!file.name || !file.name.toLowerCase().endsWith('.mp3')) return;
+                                    if (!file.name.includes('تلاوة محمد عبادة سورة')) return;
+                                    const match = file.name.match(/سورة\s*(\d{3})/);
+                                    if (match) tracks[match[1]] = file.name;
+                                });
+                                if (Object.keys(tracks).length < 114) throw new Error('فهرس المصحف غير مكتمل');
+                                return tracks;
+                            })
+                            .catch(err => {
+                                this.obadaFilesPromise = null;
+                                throw err;
+                            });
+                    }
+                    return this.obadaFilesPromise;
+                },
+
+                async playAyah(ayahNumberInSurah, autoNext = true) {
+                    this.audioError = '';
+                    this.audioElement.pause();
+                    this.audioCurrentTime = 0;
+                    this.audioDuration = 0;
+
+                    if (this.selectedReciter === 'ar.obada') {
+                        // تسجيل الشيخ متاح كملف كامل لكل سورة، وليس ملفًا منفصلًا لكل آية.
+                        this.autoNext = false;
+                        this.currentPlayingAyah = null;
+                        this.currentAudioTitle = `${this.surahData.name} كاملة (${this.getReciterName()})`;
+                        this.isPlaying = false;
+                        try {
+                            const tracks = await this.loadObadaTracks();
+                            const fileName = tracks[this.padZero(this.currentSurahNumber, 3)];
+                            if (!fileName) throw new Error('ملف السورة غير موجود');
+                            const encodedFile = encodeURIComponent(fileName);
+                            const base = 'z02402xxxxxxxxxxx';
+                            this.audioFallbacks = [
+                                `https://ia903107.us.archive.org/1/items/${base}/${encodedFile}`,
+                                `https://ia803107.us.archive.org/1/items/${base}/${encodedFile}`,
+                                `https://archive.org/download/${base}/${encodedFile}`
+                            ];
+                            this.audioFallbackIndex = 0;
+                            this.currentAudioUrl = this.audioFallbacks[0];
+                            this.audioElement.src = this.currentAudioUrl;
+                            this.audioElement.load();
+                            await this.audioElement.play();
+                            this.isPlaying = true;
+                        } catch (err) {
+                            console.warn('Obada playback could not start:', err);
+                            this.isPlaying = false;
+                            this.audioError = 'اضغط زر التشغيل مرة أخرى للبدء. إذا استمرت المشكلة فتحقق من اتصال الإنترنت.';
+                        }
+                        return;
+                    }
+
+                    this.audioFallbacks = [];
+                    this.audioFallbackIndex = 0;
+                    this.autoNext = autoNext;
+                    this.currentPlayingAyah = ayahNumberInSurah;
+
+                    let audioUrl = '';
+                    if (this.selectedReciter === 'ar.minshawi') {
+                        // تصحيح رابط المنشاوي عبر سيرفر Minshawy الإضافي المعتمد
+                        audioUrl = `https://everyayah.com/data/Minshawy_Murattal_128kbps/${this.padZero(this.currentSurahNumber, 3)}${this.padZero(ayahNumberInSurah, 3)}.mp3`;
+                    } else {
+                        audioUrl = `https://everyayah.com/data/${this.getReciterFolder()}/${this.padZero(this.currentSurahNumber, 3)}${this.padZero(ayahNumberInSurah, 3)}.mp3`;
+                    }
+
+                    this.currentAudioUrl = audioUrl;
+                    this.currentAudioTitle = `سورة ${this.surahData.name} - آية ${ayahNumberInSurah} (${this.getReciterName()})`;
+                    this.audioElement.src = audioUrl;
+
+                    this.audioElement.play().then(() => {
+                        this.isPlaying = true;
+                    }).catch(err => {
+                        console.warn('Audio playback failed:', err);
+                        this.isPlaying = false;
+                        this.audioError = 'لم يبدأ التشغيل. اضغط تشغيل مرة أخرى أو اختر قارئًا آخر.';
+                    });
+                },
+
+                seekAudio(value) {
+                    const duration = this.audioElement && this.audioElement.duration;
+                    if (!Number.isFinite(duration) || duration <= 0) return;
+                    const target = Math.max(0, Math.min(duration, Number(value)));
+                    if (!Number.isFinite(target)) return;
+                    this.audioElement.currentTime = target;
+                    this.audioCurrentTime = target;
+                },
+
+                skipAudio(seconds) {
+                    if (!this.audioElement || !Number.isFinite(this.audioElement.duration)) return;
+                    this.seekAudio(this.audioElement.currentTime + seconds);
+                },
+
+                formatAudioTime(value) {
+                    if (!Number.isFinite(value) || value < 0) return '00:00';
+                    const total = Math.floor(value);
+                    const hours = Math.floor(total / 3600);
+                    const minutes = Math.floor((total % 3600) / 60);
+                    const seconds = total % 60;
+                    const mm = String(minutes).padStart(2, '0');
+                    const ss = String(seconds).padStart(2, '0');
+                    return hours ? `${String(hours).padStart(2, '0')}:${mm}:${ss}` : `${mm}:${ss}`;
+                },
+
+                getReciterName() {
+                    const names = {
+                        'ar.alafasy': 'مشاري العفاسي',
+                        'ar.yasseraldossari': 'ياسر الدوسري',
+                        'ar.abdulbasit': 'عبد الباسط عبد الصمد',
+                        'ar.sudais': 'عبد الرحمن السديس',
+                        'ar.minshawi': 'محمد صديق المنشاوي',
+                        'ar.obada': 'محمد عبادة',
+                        'ar.nasser': 'ناصر القطامي'
+                    };
+                    return names[this.selectedReciter] || 'القارئ';
+                },
+
+                playFullSurah() {
+                    if (this.isPlaying) {
+                        this.audioElement.pause();
+                        this.isPlaying = false;
+                    } else {
+                        if (this.ayahs.length > 0) {
+                            this.playAyah(1, true);
+                        }
+                    }
+                },
+
+                toggleAudioPlay() {
+                    if (this.isPlaying) {
+                        this.audioElement.pause();
+                        this.isPlaying = false;
+                    } else if (this.audioError && this.selectedReciter === 'ar.obada') {
+                        this.playAyah(1, false);
+                    } else {
+                        this.audioElement.play().then(() => {
+                            this.isPlaying = true;
+                            this.audioError = '';
+                        }).catch(err => {
+                            console.error('Playback prevented:', err);
+                            this.isPlaying = false;
+                            this.audioError = 'لم يبدأ التشغيل. اضغط تشغيل مرة أخرى.';
+                        });
+                    }
+                },
+
+                stopAudio() {
+                    this.audioElement.pause();
+                    this.currentAudioUrl = null;
+                    this.isPlaying = false;
+                    this.currentPlayingAyah = null;
+                    this.audioFallbacks = [];
+                    this.audioFallbackIndex = 0;
+                    this.audioError = '';
+                },
+
+                getReciterFolder() {
+                    if (this.selectedReciter === 'ar.alafasy') return 'Alafasy_128kbps';
+                    if (this.selectedReciter === 'ar.yasseraldossari') return 'Dussary_128kbps';
+                    if (this.selectedReciter === 'ar.abdulbasit') return 'Abdul_Basit_Murattal_192kbps';
+                    if (this.selectedReciter === 'ar.sudais') return 'Abdurrahmaan_As-Sudais_192kbps';
+                    if (this.selectedReciter === 'ar.minshawi') return 'Minshawy_Murattal_128kbps';
+                    if (this.selectedReciter === 'ar.nasser') return 'Nasser_Alqatami_128kbps';
+                    return 'Alafasy_128kbps';
+                },
+
+                padZero(num, size) {
+                    let s = num + "";
+                    while (s.length < size) s = "0" + s;
+                    return s;
+                },
+
+                copyAyah(ayah) {
+                    const textToCopy = `${ayah.text} [سورة ${this.surahData.name}: آية ${ayah.numberInSurah}]`;
+                    const el = document.createElement('textarea');
+                    el.value = textToCopy;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                },
+
+                toggleBookmark(ayah) {
+                    const item = {
+                        number: ayah.number,
+                        numberInSurah: ayah.numberInSurah,
+                        surahName: this.surahData.name,
+                        text: ayah.text
+                    };
+                    const index = this.bookmarks.findIndex(b => b.number === ayah.number);
+                    if (index > -1) {
+                        this.bookmarks.splice(index, 1);
+                    } else {
+                        this.bookmarks.push(item);
+                    }
+                    localStorage.setItem('quran_bookmarks', JSON.stringify(this.bookmarks));
+                },
+
+                isBookmarked(ayah) {
+                    return this.bookmarks.some(b => b.number === ayah.number);
+                },
+
+                removeBookmark(b) {
+                    this.bookmarks = this.bookmarks.filter(item => item.number !== b.number);
+                    localStorage.setItem('quran_bookmarks', JSON.stringify(this.bookmarks));
+                },
+
+                get currentZikrList() {
+                    return this.azkarList.filter(z => z.category === this.selectedZikrCat);
+                },
+
+                decrementZikr(item) {
+                    if (item.remaining > 0) {
+                        item.remaining--;
+                    }
+                },
+
+                incrementTasbih() {
+                    this.tasbihCount++;
+                },
+
+                translatePrayer(name) {
+                    const names = {
+                        Fajr: 'الفجر',
+                        Sunrise: 'الشروق',
+                        Dhuhr: 'الظهر',
+                        Asr: 'العصر',
+                        Maghrib: 'المغرب',
+                        Isha: 'العشاء'
+                    };
+                    return names[name] || name;
+                },
+
+                formatPrayerDate(date, timeZone) {
+                    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                    if (timeZone) options.timeZone = timeZone;
+                    const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(date);
+                    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+                    return `${values.day}-${values.month}-${values.year}`;
+                },
+
+                async requestPrayerLocation() {
+                    this.prayerError = '';
+                    if (!navigator.geolocation) {
+                        this.prayerError = 'المتصفح لا يدعم تحديد الموقع. افتح الصفحة على HTTPS أو استخدم متصفحًا حديثًا.';
+                        return;
+                    }
+                    this.prayerLoading = true;
+                    navigator.geolocation.getCurrentPosition(position => {
+                        this.prayerCoords = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        this.fetchPrayerTimes();
+                    }, error => {
+                        this.prayerLoading = false;
+                        const messages = {
+                            1: 'لم تسمح بإذن الموقع. اسمح للموقع باستخدام موقعك ثم حاول مرة أخرى.',
+                            2: 'تعذر تحديد موقعك الآن. تحقق من تشغيل خدمات الموقع وحاول مجددًا.',
+                            3: 'انتهت مهلة تحديد الموقع. حاول مرة أخرى.'
+                        };
+                        this.prayerError = messages[error.code] || 'تعذر تحديد الموقع.';
+                    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 300000 });
+                },
+
+                refreshPrayerTimes() {
+                    if (this.prayerCoords) this.fetchPrayerTimes();
+                },
+
+                async fetchPrayerTimes() {
+                    if (!this.prayerCoords) return;
+                    this.prayerLoading = true;
+                    this.prayerError = '';
+                    try {
+                        const requestForDate = async date => {
+                            const params = new URLSearchParams({
+                                latitude: String(this.prayerCoords.latitude),
+                                longitude: String(this.prayerCoords.longitude),
+                                method: String(this.prayerMethod),
+                                school: String(this.prayerSchool)
+                            });
+                            const response = await fetch(`https://api.aladhan.com/v1/timings/${date}?${params.toString()}`);
+                            if (!response.ok) throw new Error('Prayer API request failed');
+                            const result = await response.json();
+                            if (result.code !== 200 || !result.data || !result.data.timings) throw new Error('No prayer timings returned');
+                            return result.data;
+                        };
+
+                        let requestedDate = this.formatPrayerDate(new Date());
+                        let result = await requestForDate(requestedDate);
+                        const timeZone = result.meta && result.meta.timezone ? result.meta.timezone : '';
+                        const locationDate = this.formatPrayerDate(new Date(), timeZone);
+                        if (locationDate !== requestedDate) {
+                            requestedDate = locationDate;
+                            result = await requestForDate(requestedDate);
+                        }
+
+                        const raw = {};
+                        const formatted = {};
+                        ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].forEach(name => {
+                            const match = String(result.timings[name] || '').match(/(\d{1,2}):(\d{2})/);
+                            if (!match) return;
+                            const hour = Number(match[1]);
+                            const minute = Number(match[2]);
+                            raw[name] = hour * 60 + minute;
+                            const hour12 = hour % 12 || 12;
+                            formatted[name] = `${String(hour12).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour < 12 ? 'ص' : 'م'}`;
+                        });
+                        if (!raw.Fajr || !raw.Dhuhr || !raw.Asr || !raw.Maghrib || !raw.Isha) throw new Error('Incomplete prayer schedule');
+
+                        this.prayerRawTimes = raw;
+                        this.prayerTimes = formatted;
+                        this.prayerTimezone = timeZone;
+                        this.prayerDateLocal = this.formatPrayerDate(new Date(), timeZone);
+                        this.cityName = `موقعك (${this.prayerCoords.latitude.toFixed(3)}, ${this.prayerCoords.longitude.toFixed(3)})${timeZone ? ' · ' + timeZone : ''}`;
+                        this.updatePrayerClock();
+                        this.updatePrayerCountdown();
+                    } catch (error) {
+                        console.error('Prayer times update failed:', error);
+                        this.prayerError = 'تعذر جلب المواقيت الآن. تحقق من الإنترنت ثم أعد المحاولة.';
+                    } finally {
+                        this.prayerLoading = false;
+                    }
+                },
+
+                updatePrayerClock() {
+                    const now = new Date();
+                    const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                    if (this.prayerTimezone) options.timeZone = this.prayerTimezone;
+                    this.currentTime = new Intl.DateTimeFormat('ar-EG', options).format(now);
+                },
+
+                updatePrayerCountdown() {
+                    if (!this.prayerCoords || !this.prayerTimezone || !this.prayerRawTimes.Fajr) {
+                        this.nextPrayerName = '';
+                        this.countdownTime = 'حدّد موقعك أولًا';
+                        return;
+                    }
+
+                    const now = new Date();
+                    const today = this.formatPrayerDate(now, this.prayerTimezone);
+                    if (this.prayerDateLocal && today !== this.prayerDateLocal && !this.prayerLoading) {
+                        this.fetchPrayerTimes();
+                    }
+
+                    const parts = new Intl.DateTimeFormat('en-GB', {
+                        timeZone: this.prayerTimezone,
+                        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+                    }).formatToParts(now);
+                    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+                    const nowSeconds = (Number(values.hour) * 60 + Number(values.minute)) * 60 + Number(values.second);
+                    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+                    let next = null;
+                    for (const name of prayers) {
+                        const prayerSeconds = this.prayerRawTimes[name] * 60;
+                        let remaining = prayerSeconds - nowSeconds;
+                        if (remaining <= 0) remaining += 24 * 60 * 60;
+                        if (!next || remaining < next.remaining) next = { name, remaining };
+                    }
+                    this.nextPrayerName = this.translatePrayer(next.name);
+                    const hours = Math.floor(next.remaining / 3600);
+                    const minutes = Math.floor((next.remaining % 3600) / 60);
+                    const seconds = next.remaining % 60;
+                    this.countdownTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                },
+
+                toggleTheme() {
+                    this.darkMode = !this.darkMode;
+                    this.nightMode = false;
+                },
+
+                toggleNightMode() {
+                    this.nightMode = !this.nightMode;
+                    this.darkMode = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
